@@ -1,5 +1,4 @@
 import { useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import { useRef, useState } from 'react';
 import { Dimensions, NativeSyntheticEvent, StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView, TouchableOpacity } from 'react-native-gesture-handler';
@@ -99,59 +98,12 @@ export default function HomeScreen() {
   return (
     <GestureHandlerRootView>
       <View style={styles.container}>
-        <StatusBar style="dark" />
-
-        {/* <FlatList
-          data={DATA}
-          keyExtractor={i => i.id}
-          horizontal
-          contentContainerStyle={{ paddingHorizontal: LIST_PADDING, gap: LIST_PADDING }}
-          showsHorizontalScrollIndicator={false}
-          pagingEnabled
-          // getItemLayout={(data, index) => (
-          //   { length: ITEM_WIDTH, offset: ITEM_WIDTH * index, index }
-          // )}
-          snapToAlignment='start'
-          scrollEventThrottle={16}
-          initialNumToRender={1}
-          // decelerationRate={'normal'}
-          getItemLayout={(data, index) => (
-            { length: 300, offset: 300 * index, index }
-          )}
-          renderItem={({ item }) => (
-            <View style={[styles.itemContainer, { width: ITEM_WIDTH, height: 300 }]}>
-              <Text style={styles.itemTitle}>{item.title}</Text>
-            </View>
-          )}
-        /> */}
-        {/* <LazyViewPager
-          data={DATA}
-          initialPage={0}
-          style={styles.listContainer}
-          onPageScroll={animatedListHandler}
-          onPageSelected={setCurrentPage}
-          renderItem={({ item }) => (
-            <Animated.View
-              key={(item as any).id}
-              style={[
-                styles.itemContainer,
-                (item as any).idAlt === currentPage + 1 ? evenAnimatedStyle : {},
-              ]}
-            >
-              <Text style={styles.itemTitle}>{(item as any).idAlt} - {(item as any).title}</Text>
-            </Animated.View>
-          )}
-        /> */}
-
         <AnimatedPagerView
           ref={listRef}
           onPageSelected={handlePageSelected}
           style={styles.listContainer}
           initialPage={currentPage}
           onPageScroll={animatedListHandler}
-          onPageScrollStateChanged={() => {
-            listOffset.value = 1;
-          }}
         >
           {DATA.map(item => (
             <Animated.View
@@ -160,17 +112,22 @@ export default function HomeScreen() {
                 styles.itemContainer,
                 useAnimatedStyle(() => {
                   // só faz animação caso seja 
-                  const isPositioned = listPosition.value !== item.idAlt;
+                  const isCurrentPositioned = listPosition.value !== item.idAlt;
+                  const isBeforePositioned = listPosition.value !== item.idAlt - 1;
 
                   return {
-                    opacity: isPositioned
+                    opacity: isCurrentPositioned
                       ? interpolate(listOffset.value, [0, 1], [0, 1], Extrapolation.CLAMP)
-                      : 1,
+                      : isBeforePositioned
+                        ? interpolate(listOffset.value, [0, 1], [1, 0], Extrapolation.CLAMP)
+                        : 1,
                     transform: [
                       {
-                        scale: isPositioned
-                          ? interpolate(listOffset.value, [0, 1], [0.8, 1], Extrapolation.CLAMP)
-                          : 1
+                        scale: isCurrentPositioned
+                          ? interpolate(listOffset.value, [0, 1], [0.6, 1], Extrapolation.CLAMP)
+                          : isBeforePositioned
+                            ? interpolate(listOffset.value, [0, 1], [1, 0.6], Extrapolation.CLAMP)
+                            : 1,
                       }
                     ]
                   }
@@ -187,65 +144,6 @@ export default function HomeScreen() {
           >
             <Text style={{ fontSize: 24 }}>Carregando...</Text>
           </Animated.View>
-
-          {/* {useMemo(
-            () =>
-              DATA.map(item => (
-                <Item
-                  key={item.idAlt}
-                  listOffset={listOffset}
-                  listPosition={listPosition}
-                  {...item}
-                />
-              )),
-            []
-          )} */}
-          {/* <Animated.View
-              key={item.idAlt}
-              style={[
-                styles.itemContainer,
-                useAnimatedStyle(() => {
-                  // só faz animação caso seja 
-                  const isPositioned = listPosition.value !== item.idAlt;
-
-                  return {
-                    opacity: isPositioned
-                      ? interpolate(listOffset.value, [0, 1], [0, 1], Extrapolation.CLAMP)
-                      : 1,
-                    transform: [
-                      {
-                        scale: isPositioned
-                          ? interpolate(listOffset.value, [0, 1], [0.8, 1], Extrapolation.CLAMP)
-                          : 1
-                      }
-                    ]
-                  }
-                })
-              ]}
-            >
-              <Text style={styles.itemTitle}>{item.idAlt} - {item.title}</Text>
-            </Animated.View> */}
-          {/* <Item
-            key={1}
-            animatedStyle={useAnimatedStyle(() => ({
-              opacity: listPosition.value !== 1 // 1 é a posição do item
-                ? interpolate(listOffset.value, [0, 1], [0, 1], Extrapolation.CLAMP)
-                : 1,
-              transform: [
-                {
-                  scale: listPosition.value !== 1
-                    ? interpolate(listOffset.value, [0, 1], [0.8, 1], Extrapolation.CLAMP)
-                    : 1
-                }
-              ]
-            }))}
-          /> */}
-          {/* <Animated.View
-            key="1"
-            style={[styles.itemContainer, itemAnimatedStyle]}
-          >
-            <Text style={styles.itemTitle}>2 - Lorem Ipsum</Text>
-          </Animated.View> */}
         </AnimatedPagerView>
 
         <View style={styles.btnsContainer}>
