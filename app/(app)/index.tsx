@@ -1,7 +1,8 @@
+import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useRef, useState } from 'react';
 import { Dimensions, NativeSyntheticEvent, StyleSheet, Text, View } from 'react-native';
-import { FlatList, GestureHandlerRootView, TouchableOpacity } from 'react-native-gesture-handler';
+import { GestureHandlerRootView, TouchableOpacity } from 'react-native-gesture-handler';
 import PagerView from 'react-native-pager-view';
 import Animated, { Extrapolation, interpolate, SharedValue, useAnimatedStyle, useEvent, useHandler, useSharedValue } from 'react-native-reanimated';
 import { Double } from 'react-native/Libraries/Types/CodegenTypes';
@@ -29,7 +30,7 @@ function generateLoremIpsum(wordCount: number): string {
   return result.join(" ");
 }
 
-const DATA = Array(20).fill('').map((_, i) => ({
+const DATA = Array(8).fill('').map((_, i) => ({
   id: `id-${i + 1}`,
   idAlt: i,
   title: generateLoremIpsum(randomNumber(2, 5)),
@@ -80,24 +81,20 @@ export default function HomeScreen() {
     listRef.current?.setPage(currentPage - 1);
   }
 
+  const navigation = useRouter();
+
   function handlePageSelected(evt: NativeSyntheticEvent<Readonly<{
     position: Double;
   }>>) {
     setCurrentPage(evt.nativeEvent.position)
-  }
 
-  const itemAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: listPosition.value !== 1 // 1 é a posição do item
-      ? interpolate(listOffset.value, [0, 1], [0, 1], Extrapolation.CLAMP)
-      : 1,
-    transform: [
-      {
-        scale: listPosition.value !== 1
-          ? interpolate(listOffset.value, [0, 1], [0.8, 1], Extrapolation.CLAMP)
-          : 1
-      }
-    ]
-  }));
+    if (evt.nativeEvent.position === DATA.length) {
+      new Promise(res => setTimeout(res, 1000)).then(() => {
+        console.log('final')
+        navigation.push('home');
+      });
+    }
+  }
 
   return (
     <GestureHandlerRootView>
@@ -127,6 +124,25 @@ export default function HomeScreen() {
             </View>
           )}
         /> */}
+        {/* <LazyViewPager
+          data={DATA}
+          initialPage={0}
+          style={styles.listContainer}
+          onPageScroll={animatedListHandler}
+          onPageSelected={setCurrentPage}
+          renderItem={({ item }) => (
+            <Animated.View
+              key={(item as any).id}
+              style={[
+                styles.itemContainer,
+                (item as any).idAlt === currentPage + 1 ? evenAnimatedStyle : {},
+              ]}
+            >
+              <Text style={styles.itemTitle}>{(item as any).idAlt} - {(item as any).title}</Text>
+            </Animated.View>
+          )}
+        /> */}
+
         <AnimatedPagerView
           ref={listRef}
           onPageSelected={handlePageSelected}
@@ -134,23 +150,12 @@ export default function HomeScreen() {
           initialPage={currentPage}
           onPageScroll={animatedListHandler}
           onPageScrollStateChanged={() => {
-            console.log('changed');
             listOffset.value = 1;
           }}
         >
-          {/* {DATA.map(item => (
-            <View key={item.id} style={[styles.itemContainer]}>
-              <Text style={styles.itemTitle}>{item.idAlt} - {item.title}</Text>
-            </View>
-          ))} */}
-
-          {/* <View key="0" style={[styles.itemContainer]}>
-            <Text style={styles.itemTitle}>1 - Lorem Ipsum</Text>
-          </View> */}
-
           {DATA.map(item => (
             <Animated.View
-              key={item.idAlt}
+              key={item.id}
               style={[
                 styles.itemContainer,
                 useAnimatedStyle(() => {
@@ -175,6 +180,51 @@ export default function HomeScreen() {
               <Text style={styles.itemTitle}>{item.idAlt} - {item.title}</Text>
             </Animated.View>
           ))}
+
+          <Animated.View
+            key="9"
+            style={{ alignItems: 'center', justifyContent: 'center' }}
+          >
+            <Text style={{ fontSize: 24 }}>Carregando...</Text>
+          </Animated.View>
+
+          {/* {useMemo(
+            () =>
+              DATA.map(item => (
+                <Item
+                  key={item.idAlt}
+                  listOffset={listOffset}
+                  listPosition={listPosition}
+                  {...item}
+                />
+              )),
+            []
+          )} */}
+          {/* <Animated.View
+              key={item.idAlt}
+              style={[
+                styles.itemContainer,
+                useAnimatedStyle(() => {
+                  // só faz animação caso seja 
+                  const isPositioned = listPosition.value !== item.idAlt;
+
+                  return {
+                    opacity: isPositioned
+                      ? interpolate(listOffset.value, [0, 1], [0, 1], Extrapolation.CLAMP)
+                      : 1,
+                    transform: [
+                      {
+                        scale: isPositioned
+                          ? interpolate(listOffset.value, [0, 1], [0.8, 1], Extrapolation.CLAMP)
+                          : 1
+                      }
+                    ]
+                  }
+                })
+              ]}
+            >
+              <Text style={styles.itemTitle}>{item.idAlt} - {item.title}</Text>
+            </Animated.View> */}
           {/* <Item
             key={1}
             animatedStyle={useAnimatedStyle(() => ({
@@ -208,29 +258,35 @@ export default function HomeScreen() {
 }
 
 type ItemProps = {
-  key: number;
   listPosition: SharedValue<number>;
   listOffset: SharedValue<number>;
-  animatedStyle: any;
+  id: string;
+  idAlt: number;
+  title: string;
 };
-function Item({ key, listOffset, listPosition, animatedStyle }: ItemProps) {
+function Item({ listOffset, listPosition, id, idAlt, title }: ItemProps) {
 
-  // const itemAnimatedStyle = useAnimatedStyle(() => ({
-  //   opacity: listPosition.value !== key
-  //     ? interpolate(listOffset.value, [0, 1], [0, 1], Extrapolation.CLAMP)
-  //     : 1,
-  //   transform: [
-  //     {
-  //       scale: listPosition.value !== key
-  //         ? interpolate(listOffset.value, [0, 1], [0.8, 1], Extrapolation.CLAMP)
-  //         : 1
-  //     }
-  //   ]
-  // }));
+  const animatedStyle = useAnimatedStyle(() => {
+    // só faz animação caso seja 
+    const isPositioned = listPosition.value !== idAlt;
+
+    return {
+      opacity: isPositioned
+        ? interpolate(listOffset.value, [0, 1], [0, 1], Extrapolation.CLAMP)
+        : 1,
+      transform: [
+        {
+          scale: isPositioned
+            ? interpolate(listOffset.value, [0, 1], [0.8, 1], Extrapolation.CLAMP)
+            : 1
+        }
+      ]
+    }
+  })
 
   return (
-    <Animated.View key={String(key)} style={[styles.itemContainer, animatedStyle]}>
-      <Text style={styles.itemTitle}>2 - Lorem Ipsum</Text>
+    <Animated.View key={String(id)} style={[styles.itemContainer, animatedStyle]}>
+      <Text style={styles.itemTitle}>{idAlt} - {title}</Text>
     </Animated.View>
   )
 }
