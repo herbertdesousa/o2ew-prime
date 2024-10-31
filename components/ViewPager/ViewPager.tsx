@@ -66,13 +66,14 @@ export function ViewPagerImpl<DataItem>(
   {
     data: clientData,
     renderItem,
-    onReachHead,
     style,
+    onChange,
+    onReachHead,
     onReachTail,
     renderHead,
     renderTail,
   }: ViewPagerProps<DataItem>,
-  ref: React.Ref<ViewPagerRef>,
+  ref: React.Ref<ViewPagerRef<DataItem>>,
 ) {
   const isClientDataEmpty = clientData.length === 0;
 
@@ -94,7 +95,7 @@ export function ViewPagerImpl<DataItem>(
 
   const shouldRenderHead = Boolean(!isClientDataEmpty && renderHead);
 
-  // pula a head para iniciar no
+  // pula a head para iniciar no primeiro item
   const initialPage = shouldRenderHead ? 1 : 0;
 
   const listRef = useRef<PagerView>(null);
@@ -117,8 +118,16 @@ export function ViewPagerImpl<DataItem>(
     previousPage() {
       listRef.current?.setPage(listPosition.value - 1);
     },
-  }));
+    gotoPageWhere(fn: (item: DataItem) => boolean) {
+      const findedItem = data.findIndex(i => {
+        if (i._type === 'MAIN') return fn(i.payload)
 
+        return false;
+      });
+
+      if (findedItem >= 0) listRef.current?.setPage(findedItem);
+    }
+  }));
 
   function handlePageSelected(evt: PageSelectedEvt) {
     const currentItem = data[evt.nativeEvent.position];
@@ -127,6 +136,8 @@ export function ViewPagerImpl<DataItem>(
       onReachHead();
     } else if (currentItem?._type === 'TAIL' && onReachTail) {
       onReachTail();
+    } else if (currentItem?._type === 'MAIN' && onChange) {
+      onChange(currentItem.payload);
     }
   }
 

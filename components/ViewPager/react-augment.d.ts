@@ -1,14 +1,16 @@
 import React from "react"
 
-export type ViewPagerRef = {
+export type ViewPagerRef<DataItem> = {
   nextPage(): void;
   previousPage(): void;
+  gotoPageWhere(fn: (item: DataItem) => boolean): void;
 }
 
 export type ViewPagerProps<DataItem> = {
   data: DataItem[];
   style?: StyleProp<AnimatedStyle<StyleProp<ViewStyle>>>;
   renderItem(item: DataItem): React.ReactElement;
+  onChange?(item: DataItem): void;
   onReachTail?(): void;
   onReachHead?(): void;
   // elemento que vem antes do primeiro
