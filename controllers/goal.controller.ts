@@ -1,19 +1,42 @@
-import { Goal } from '@/entities/goal';
-import { z } from 'zod';
+import { Goal, GoalStep, GoalStepAnswer } from '@/entities/goal';
+import { object, z } from 'zod';
 
-function generateRandomId(): string {
-  return Math.floor(10000000 + Math.random() * 90000000).toString();
+function randomID(size: number): string {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+
+  for (let i = 0; i < size; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+
+  return result;
 }
 
 export class GoalController {
+  private mapIdToGoal = new Map<string, Goal>();
+
   async GetGoals(): Promise<Goal[]> {
     const requestShape = z.object({
       objetivos: z.array(
         z.object({
           Idt_objetivo: z.number(),
+          Idt_titulo: z.number(),
           objetivo: z.string(),
           titulo: z.string(),
           bac_cor: z.string(),
+          des_passos: z.array(
+            z.object({
+              Idt_passo: z.number(),
+              texto: z.string(),
+              des_Passos_Respostas: z.array(
+                z.object({
+                  Idt_passo_resposta: z.number(),
+                  texto: z.string(),
+                  data_formatada: z.string(),
+                }),
+              ),
+            }),
+          )
         }),
       ),
     });
@@ -22,18 +45,48 @@ export class GoalController {
 
     if (result.error) return [];
 
-    return result.data.objetivos.map(objetivo => {
+    const goals = result.data.objetivos.map(_objetivo => {
       const goal = new Goal()
 
-      goal.$id = generateRandomId();
-      goal.id = String(objetivo.Idt_objetivo);
-      goal.description = objetivo.objetivo;
-      goal.title = objetivo.titulo;
-      goal.color = objetivo.bac_cor;
+      goal.$clientId = randomID(16);
+      goal.id = String(_objetivo.Idt_objetivo);
+      goal.title = _objetivo.titulo;
+      goal.title_id = String(_objetivo.Idt_titulo);
+      goal.description = _objetivo.objetivo;
+      goal.color = _objetivo.bac_cor;
+
+      goal.steps = _objetivo.des_passos.map(_passo => {
+        const goalStep = new GoalStep();
+
+        goalStep.$clientId = randomID(16);
+        goalStep.id = String(_passo.Idt_passo);
+        goalStep.description = _passo.texto;
+
+        goalStep.asnwers = _passo.des_Passos_Respostas.map(_resposta => {
+          const goalStepAsnwer = new GoalStepAnswer();
+
+          goalStepAsnwer.$clientId = randomID(16);
+          goalStepAsnwer.id = String(_resposta.Idt_passo_resposta);
+          goalStepAsnwer.date_label = _resposta.data_formatada;
+          goalStepAsnwer.description = _resposta.texto;
+
+          return goalStepAsnwer;
+        });
+
+        return goalStep;
+      });
+
+      this.mapIdToGoal.set(goal.$clientId, goal);
 
       return goal;
     });
+
+    return goals;
   };
+
+  async FindGoalStep(goalClientId: string): Promise<Goal | undefined> {
+    return this.mapIdToGoal.get(goalClientId);
+  }
 
   private data = {
     "objetivos": [
