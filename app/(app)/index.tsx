@@ -1,199 +1,114 @@
-import { useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
-import { Dimensions, NativeSyntheticEvent, StyleSheet, Text, View } from 'react-native';
-import { GestureHandlerRootView, TouchableOpacity } from 'react-native-gesture-handler';
-import PagerView from 'react-native-pager-view';
-import Animated, { Extrapolation, interpolate, SharedValue, useAnimatedStyle, useEvent, useHandler, useSharedValue } from 'react-native-reanimated';
-import { Double } from 'react-native/Libraries/Types/CodegenTypes';
+import { ViewPagerRef } from '@/components/ViewPager/react-augment';
+import { ViewPager } from '@/components/ViewPager/ViewPager';
+import { GoalController } from '@/controllers/goal.controller';
+import { Goal } from '@/entities/goal';
+import { useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomTab } from './bottom-tab';
 
-function randomNumber(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+async function delay(ms: number) {
+  return await new Promise(res => setTimeout(res, ms));
 }
 
-
-function generateLoremIpsum(wordCount: number): string {
-  const loremWords = [
-    "lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipiscing", "elit", "sed", "do", "eiusmod",
-    "tempor", "incididunt", "ut", "labore", "et", "dolore", "magna", "aliqua", "ut", "enim", "ad", "minim",
-    "veniam", "quis", "nostrud", "exercitation", "ullamco", "laboris", "nisi", "ut", "aliquip", "ex", "ea",
-    "commodo", "consequat", "duis", "aute", "irure", "dolor", "in", "reprehenderit", "in", "voluptate",
-    "velit", "esse", "cillum", "dolore", "eu", "fugiat", "nulla", "pariatur"
-  ];
-
-  let result = [];
-  for (let i = 0; i < wordCount; i++) {
-    const randomIndex = Math.floor(Math.random() * loremWords.length);
-    result.push(loremWords[randomIndex]);
-  }
-
-  return result.join(" ");
-}
-
-const DATA = Array(8).fill('').map((_, i) => ({
-  id: `id-${i + 1}`,
-  idAlt: i,
-  title: generateLoremIpsum(randomNumber(2, 5)),
-}))
-
-const LIST_PADDING = 24;
-const ITEM_WIDTH = Dimensions.get('window').width - (LIST_PADDING * 2);
-
-const AnimatedPagerView = Animated.createAnimatedComponent(PagerView);
-
-function usePagerScrollHandler(handlers: any, dependencies?: any) {
-  const { context, doDependenciesDiffer } = useHandler(handlers, dependencies);
-  const subscribeForEvents = ['onPageScroll'];
-
-  return useEvent<any>(
-    (event) => {
-      'worklet';
-      const { onPageScroll } = handlers;
-      if (onPageScroll && event.eventName.endsWith('onPageScroll')) {
-        onPageScroll(event, context);
-      }
-    },
-    subscribeForEvents,
-    doDependenciesDiffer
-  );
-}
+const goalController = new GoalController();
 
 export default function HomeScreen() {
-  const listOffset = useSharedValue(0);
-  const listPosition = useSharedValue(0);
+  const pageViewRef = useRef<ViewPagerRef<Goal>>(null);
 
-  const animatedListHandler = usePagerScrollHandler({
-    onPageScroll: (e: any) => {
-      'worklet';
-      listOffset.value = e.offset;
-      listPosition.value = e.position;
-    },
-  });
-  const listRef = useRef<PagerView>(null);
+  const [goals, setGoals] = useState<Goal[]>([])
+  const [isLoadingGoals, setIsLoadingGoals] = useState(true);
 
-  const [currentPage, setCurrentPage] = useState(0);
+  const [selectedGoal, setSelectedGoal] = useState<Goal | null>();
+  const [selectedGoalIndex, setSelectedGoalIndex] = useState(0);
 
-  function handleNextPage() {
-    listRef.current?.setPage(currentPage + 1);
+  useEffect(() => {
+    goalController.GetGoals().then(setGoals).finally(() => {
+      setIsLoadingGoals(false);
+    });
+  }, []);
+
+  function handleOnChange(goal: Goal) {
+    setSelectedGoal(goal);
+
+    const findedGoalIndex = goals.findIndex(g => g.$id === goal.$id);
+
+    setSelectedGoalIndex(findedGoalIndex)
   }
 
-  function handlePreviousPage() {
-    listRef.current?.setPage(currentPage - 1);
-  }
-
-  const navigation = useRouter();
-
-  function handlePageSelected(evt: NativeSyntheticEvent<Readonly<{
-    position: Double;
-  }>>) {
-    setCurrentPage(evt.nativeEvent.position)
-
-    if (evt.nativeEvent.position === DATA.length) {
-      new Promise(res => setTimeout(res, 1000)).then(() => {
-        console.log('final')
-        navigation.push('home');
-      });
-    }
-  }
+  const goalsLabel = `${selectedGoalIndex + 1}/${goals.length} Objetivos`;
 
   return (
     <GestureHandlerRootView>
       <View style={styles.container}>
-        <AnimatedPagerView
-          ref={listRef}
-          onPageSelected={handlePageSelected}
-          style={styles.listContainer}
-          initialPage={currentPage}
-          onPageScroll={animatedListHandler}
-        >
-          {DATA.map(item => (
-            <Animated.View
-              key={item.id}
-              style={[
-                styles.itemContainer,
-                useAnimatedStyle(() => {
-                  // só faz animação caso seja 
-                  const isCurrentPositioned = listPosition.value !== item.idAlt;
-                  const isBeforePositioned = listPosition.value !== item.idAlt - 1;
+        {isLoadingGoals && <Text>Carregando Objetivos</Text>}
+        {!isLoadingGoals && (
+          <View style={{ height: 96 + 128, gap: 16 }}>
+            {selectedGoal && (
+              <View style={{ paddingHorizontal: 24 }}>
+                <Text
+                  style={{ color: selectedGoal.color, fontSize: 32, textAlign: 'center' }}
+                >
+                  {selectedGoal.title}
+                </Text>
+              </View>
+            )}
 
-                  return {
-                    opacity: isCurrentPositioned
-                      ? interpolate(listOffset.value, [0, 1], [0, 1], Extrapolation.CLAMP)
-                      : isBeforePositioned
-                        ? interpolate(listOffset.value, [0, 1], [1, 0], Extrapolation.CLAMP)
-                        : 1,
-                    transform: [
-                      {
-                        scale: isCurrentPositioned
-                          ? interpolate(listOffset.value, [0, 1], [0.6, 1], Extrapolation.CLAMP)
-                          : isBeforePositioned
-                            ? interpolate(listOffset.value, [0, 1], [1, 0.6], Extrapolation.CLAMP)
-                            : 1,
-                      }
-                    ]
-                  }
-                })
-              ]}
+            <ViewPager
+              ref={pageViewRef}
+              data={goals}
+              style={{ maxHeight: 96 }}
+              renderItem={item => (
+                <View style={[styles.itemContainer, { backgroundColor: item.color }]}>
+                  <Text style={styles.itemTitle}>{item.id} - {item.description}</Text>
+                </View>
+              )}
+              onChange={handleOnChange}
+              onReachTail={() => console.log(`tail`)}
+              onReachHead={() => console.log(`head`)}
+              renderHead={() => <Text style={{ color: 'white', fontSize: 24 }}>head</Text>}
+              renderTail={() => <Text style={{ color: 'white', fontSize: 24 }}>tail</Text>}
+            />
+
+            <View
+              style={{
+                paddingHorizontal: 24,
+                gap: 24,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
             >
-              <Text style={styles.itemTitle}>{item.idAlt} - {item.title}</Text>
-            </Animated.View>
-          ))}
+              <Btn label="<" onPress={() => pageViewRef.current?.previousPage()} />
+              <Text style={{ color: 'white', fontSize: 16 }}>{goalsLabel}</Text>
+              <Btn label=">" onPress={() => pageViewRef.current?.nextPage()} />
+            </View>
+          </View>
+        )}
 
-          <Animated.View
-            key="9"
-            style={{ alignItems: 'center', justifyContent: 'center' }}
-          >
-            <Text style={{ fontSize: 24 }}>Carregando...</Text>
-          </Animated.View>
-        </AnimatedPagerView>
+        <View style={{ flex: 1, backgroundColor: 'gray' }} />
 
-        <View style={styles.btnsContainer}>
-          <Btn label='<' onPress={handlePreviousPage} />
-          <Btn label='>' onPress={handleNextPage} />
-        </View>
+        <BottomTab goals={goals} pageViewRef={pageViewRef} />
       </View>
     </GestureHandlerRootView >
   );
 }
 
-type ItemProps = {
-  listPosition: SharedValue<number>;
-  listOffset: SharedValue<number>;
-  id: string;
-  idAlt: number;
-  title: string;
-};
-function Item({ listOffset, listPosition, id, idAlt, title }: ItemProps) {
-
-  const animatedStyle = useAnimatedStyle(() => {
-    // só faz animação caso seja 
-    const isPositioned = listPosition.value !== idAlt;
-
-    return {
-      opacity: isPositioned
-        ? interpolate(listOffset.value, [0, 1], [0, 1], Extrapolation.CLAMP)
-        : 1,
-      transform: [
-        {
-          scale: isPositioned
-            ? interpolate(listOffset.value, [0, 1], [0.8, 1], Extrapolation.CLAMP)
-            : 1
-        }
-      ]
-    }
-  })
-
-  return (
-    <Animated.View key={String(id)} style={[styles.itemContainer, animatedStyle]}>
-      <Text style={styles.itemTitle}>{idAlt} - {title}</Text>
-    </Animated.View>
-  )
-}
 
 type BtnProps = { label: string; onPress?(): void };
 function Btn({ label, onPress }: BtnProps) {
   return (
-    <TouchableOpacity style={styles.btnContainer} onPress={onPress}>
-      <Text style={styles.btnLabel}>{label}</Text>
+    <TouchableOpacity
+      style={{
+        height: 48,
+        flex: 1,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      onPress={onPress}
+    >
+      <Text style={{ fontSize: 24, fontWeight: 'semibold', color: 'white' }}>{label}</Text>
     </TouchableOpacity>
   )
 }
@@ -210,14 +125,12 @@ const styles = StyleSheet.create({
     maxHeight: 128,
   },
   itemContainer: {
-    backgroundColor: '#00ADEE',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 16,
     paddingHorizontal: 32,
     paddingVertical: 16,
     marginHorizontal: 24,
-
   },
   itemTitle: {
     fontSize: 24,
