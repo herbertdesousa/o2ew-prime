@@ -16,6 +16,8 @@ export class Goal {
 
   description!: string;
 
+  last_goal_answered_id!: string | null;
+
   color!: string;
 
   steps: GoalStep[] = [];

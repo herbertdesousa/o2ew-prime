@@ -6,6 +6,8 @@ export class GoalController {
   private mapIdToGoal = new Map<string, Goal>();
 
   async GetGoals(): Promise<Goal[]> {
+    // dados mocados, mas poderia executar busca 
+
     const requestShape = z.object({
       objetivos: z.array(
         z.object({
@@ -14,6 +16,7 @@ export class GoalController {
           objetivo: z.string(),
           titulo: z.string(),
           bac_cor: z.string(),
+          ultimaRespostaId: z.number().nullable(),
           des_passos: z.array(
             z.object({
               Idt_passo: z.number(),
@@ -44,6 +47,9 @@ export class GoalController {
       goal.title_id = String(_objetivo.Idt_titulo);
       goal.description = _objetivo.objetivo;
       goal.color = _objetivo.bac_cor;
+      goal.last_goal_answered_id = _objetivo.ultimaRespostaId
+        ? String(_objetivo.ultimaRespostaId)
+        : null;
 
       goal.steps = _objetivo.des_passos.map(_passo => {
         const goalStep = new GoalStep();
@@ -75,6 +81,8 @@ export class GoalController {
   };
 
   async FindGoalStep(goalClientId: string): Promise<Goal | undefined> {
+    // atualmente buscando no map, mas existe possibilidade de buscar via id
+
     return this.mapIdToGoal.get(goalClientId);
   }
 
@@ -385,7 +393,8 @@ export class GoalController {
         "bac_cor": "#00adef",
         "grafico": 1,
         "proximo_titulo": 2,
-        "ultimaResposta": 6
+        "ultimaResposta": 6,
+        "ultimaRespostaId": 6
       },
       {
         "Idt_objetivo": 2,
@@ -610,7 +619,8 @@ export class GoalController {
         "bac_cor": "#00adef",
         "grafico": 1,
         "proximo_titulo": 2,
-        "ultimaResposta": 2
+        "ultimaResposta": 2,
+        "ultimaRespostaId": 10
       },
       {
         "Idt_objetivo": 3,
@@ -767,7 +777,8 @@ export class GoalController {
         "bac_cor": "#00adef",
         "grafico": 1,
         "proximo_titulo": 2,
-        "ultimaResposta": 5
+        "ultimaResposta": 5,
+        "ultimaRespostaId": 21
       },
       {
         "Idt_objetivo": 4,
@@ -924,7 +935,8 @@ export class GoalController {
         "bac_cor": "#00adef",
         "grafico": 1,
         "proximo_titulo": 2,
-        "ultimaResposta": 5
+        "ultimaResposta": 5,
+        "ultimaRespostaId": 29
       },
       {
         "Idt_objetivo": 5,
@@ -1064,7 +1076,8 @@ export class GoalController {
         "bac_cor": "#00adef",
         "grafico": 1,
         "proximo_titulo": 2,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 6,
@@ -1204,7 +1217,8 @@ export class GoalController {
         "bac_cor": "#00adef",
         "grafico": 1,
         "proximo_titulo": 2,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 7,
@@ -1344,7 +1358,8 @@ export class GoalController {
         "bac_cor": "#00adef",
         "grafico": 1,
         "proximo_titulo": 2,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 8,
@@ -1484,7 +1499,8 @@ export class GoalController {
         "bac_cor": "#00adef",
         "grafico": 1,
         "proximo_titulo": 2,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 9,
@@ -1641,7 +1657,8 @@ export class GoalController {
         "bac_cor": "#00adef",
         "grafico": 1,
         "proximo_titulo": 2,
-        "ultimaResposta": 1
+        "ultimaResposta": 1,
+        "ultimaRespostaId": 65
       },
       {
         "Idt_objetivo": 10,
@@ -1847,7 +1864,8 @@ export class GoalController {
         "bac_cor": "#ea7323",
         "grafico": 1,
         "proximo_titulo": 3,
-        "ultimaResposta": 2
+        "ultimaResposta": 2,
+        "ultimaRespostaId": 74
       },
       {
         "Idt_objetivo": 11,
@@ -1987,7 +2005,8 @@ export class GoalController {
         "bac_cor": "#ea7323",
         "grafico": 1,
         "proximo_titulo": 3,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 12,
@@ -2127,7 +2146,8 @@ export class GoalController {
         "bac_cor": "#e5b724",
         "grafico": 1,
         "proximo_titulo": 4,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 13,
@@ -2267,7 +2287,8 @@ export class GoalController {
         "bac_cor": "#e5b724",
         "grafico": 1,
         "proximo_titulo": 4,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 14,
@@ -2407,7 +2428,8 @@ export class GoalController {
         "bac_cor": "#e5b724",
         "grafico": 1,
         "proximo_titulo": 4,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 15,
@@ -2547,7 +2569,8 @@ export class GoalController {
         "bac_cor": "#e5b724",
         "grafico": 1,
         "proximo_titulo": 4,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 16,
@@ -2687,7 +2710,8 @@ export class GoalController {
         "bac_cor": "#e5b724",
         "grafico": 1,
         "proximo_titulo": 4,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 17,
@@ -2827,7 +2851,8 @@ export class GoalController {
         "bac_cor": "#e5b724",
         "grafico": 1,
         "proximo_titulo": 4,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 18,
@@ -2967,7 +2992,8 @@ export class GoalController {
         "bac_cor": "#e5b724",
         "grafico": 1,
         "proximo_titulo": 4,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 19,
@@ -3107,7 +3133,8 @@ export class GoalController {
         "bac_cor": "#e5b724",
         "grafico": 1,
         "proximo_titulo": 4,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 20,
@@ -3247,7 +3274,8 @@ export class GoalController {
         "bac_cor": "#ed3c96",
         "grafico": 1,
         "proximo_titulo": 6,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 21,
@@ -3387,7 +3415,8 @@ export class GoalController {
         "bac_cor": "#ed3c96",
         "grafico": 1,
         "proximo_titulo": 6,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 22,
@@ -3527,7 +3556,8 @@ export class GoalController {
         "bac_cor": "#ed3c96",
         "grafico": 1,
         "proximo_titulo": 6,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 23,
@@ -3667,7 +3697,8 @@ export class GoalController {
         "bac_cor": "#ed3c96",
         "grafico": 1,
         "proximo_titulo": 6,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 24,
@@ -3807,7 +3838,8 @@ export class GoalController {
         "bac_cor": "#ed3c96",
         "grafico": 1,
         "proximo_titulo": 6,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 25,
@@ -3947,7 +3979,8 @@ export class GoalController {
         "bac_cor": "#ed3c96",
         "grafico": 1,
         "proximo_titulo": 6,
-        "ultimaResposta": null
+        "ultimaResposta": null,
+        "ultimaRespostaId": null
       },
       {
         "Idt_objetivo": 32,
@@ -4104,7 +4137,8 @@ export class GoalController {
         "bac_cor": "#ed3c96",
         "grafico": 1,
         "proximo_titulo": 6,
-        "ultimaResposta": 6
+        "ultimaResposta": 6,
+        "ultimaRespostaId": 206
       }
     ]
   };

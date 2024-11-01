@@ -1,10 +1,11 @@
+import { ViewPagerRef } from "@/components/ViewPager/react-augment";
 import { ViewPager } from "@/components/ViewPager/ViewPager";
 import { useGoal } from "@/contexts/goal-context";
 import { DI } from "@/controllers/DI";
-import { Goal } from "@/entities/goal";
+import { Goal, GoalStep } from "@/entities/goal";
 import { delay } from "@/utils/delay";
-import { useAsync } from "@/utils/use-async";
-import { useEffect, useState } from "react";
+import { asyncArrayToState, useAsync } from "@/utils/use-async";
+import { useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 
 export function Steps() {
@@ -35,12 +36,24 @@ export function Steps() {
 
 type Props = { goal: Goal };
 function Main({ goal }: Props) {
-  const { goalVPRef } = useGoal();
+  const { selectedGoal, goalVPRef } = useGoal();
+
+  const stepsVPRef = useRef<ViewPagerRef<GoalStep>>(null);
 
   const details = useAsync(
     async () => DI.goal.FindGoalStep(goal.$clientId),
     [goal.$clientId],
   );
+
+  const steps = details.state === 'SUCCESS' ? details.data?.steps ?? [] : [];
+
+  useEffect(() => {
+    const lastId = selectedGoal.state?.last_goal_answered_id;
+
+    if (!lastId) return;
+
+    stepsVPRef.current?.gotoPageWhere(p => p.id === lastId);
+  }, [details.state]);
 
   if (details.state === 'LOADING') return <Text>Carregando...</Text>;
   if (details.state === 'ERROR') return <></>;
@@ -57,10 +70,9 @@ function Main({ goal }: Props) {
     });
   }
 
-  const steps = details.data?.steps || [];
-
   return (
     <ViewPager
+      ref={stepsVPRef}
       data={steps}
       style={{ flex: 1 }}
       renderItem={item => (
