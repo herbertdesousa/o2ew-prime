@@ -75,24 +75,42 @@ function Main({ goal }: Props) {
       ref={stepsVPRef}
       data={steps}
       style={{ flex: 1 }}
-      renderItem={item => (
-        <View
-          style={{
-            borderWidth: 1,
-            borderColor: details.data?.color,
-            borderRadius: 8,
-            marginHorizontal: 24,
-            padding: 8
-          }}
-        >
-          {item.description && (
-            <Text style={{ color: 'white', fontSize: 18 }}>{item.description}</Text>
-          )}
-          {!item.description && (
-            <Text style={{ color: 'white', fontStyle: 'italic', fontSize: 18 }}>
-              Nenhuma descrição
-            </Text>
-          )}
+      renderItem={step => (
+        <View style={{ marginHorizontal: 24, gap: 8 }}>
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: details.data?.color,
+              borderRadius: 8,
+              padding: 8,
+              gap: 8,
+            }}
+          >
+            {step.description && (
+              <Text style={{ color: 'white', fontSize: 18 }}>{step.description}</Text>
+            )}
+            {!step.description && (
+              <Text style={{ color: 'white', fontStyle: 'italic', fontSize: 18 }}>
+                Nenhuma descrição
+              </Text>
+            )}
+          </View>
+
+          <View style={{ gap: 4 }}>
+            {step.asnwers.map(answer => (
+              <View
+                key={answer.$clientId}
+                style={{
+                  borderWidth: 1,
+                  borderColor: details.data?.color,
+                  borderRadius: 8,
+                  padding: 8
+                }}
+              >
+                <Text style={{ color: 'white', fontSize: 18 }}>{answer.description}</Text>
+              </View>
+            ))}
+          </View>
         </View>
       )}
       // onChange={handleOnChange}
