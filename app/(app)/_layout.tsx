@@ -1,60 +1,44 @@
-import { Slot } from 'expo-router';
-import { useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Slot } from 'expo-router';
 
-import { ViewPagerRef } from '@/components/ViewPager/react-augment';
 import { ViewPager } from '@/components/ViewPager/ViewPager';
-import { DI } from '@/controllers/DI';
-import { Goal } from '@/entities/goal';
-import { useAsync } from '@/utils/use-async';
+import { asyncGoalsToState, useGoal } from '@/contexts/goal-context';
 import { BottomTab } from './bottom-tab';
 
 export default function HomeScreen() {
-  const goalsSt = useAsync(async () => await DI.goal.GetGoals());
-  const goals = goalsSt.state === 'SUCCESS' ? goalsSt.data : [];
+  const { goalVPRef, goals, selectedGoal, onChangeSelection } = useGoal();
 
-  const pageViewRef = useRef<ViewPagerRef<Goal>>(null);
+  const goalsState = asyncGoalsToState(goals);
 
-  const [selectedGoal, setSelectedGoal] = useState<Goal>();
-  const [selectedGoalIndex, setSelectedGoalIndex] = useState(0);
-
-  function handleOnChange(goal: Goal) {
-    setSelectedGoal(goal);
-
-    const findedGoalIndex = goals.findIndex(g => g.$clientId === goal.$clientId);
-
-    setSelectedGoalIndex(findedGoalIndex)
-  }
-
-  const goalsLabel = `${selectedGoalIndex + 1}/${goals.length} Objetivos`;
+  const goalsLabel = `${selectedGoal.index + 1}/${goalsState.length} Objetivos`;
 
   return (
     <GestureHandlerRootView>
       <View style={styles.container}>
-        {goalsSt.state === 'LOADING' && <Text>Carregando Objetivos</Text>}
-        {goalsSt.state === 'SUCCESS' && (
+        {goals.state === 'LOADING' && <Text>Carregando Objetivos</Text>}
+        {goals.state === 'SUCCESS' && (
           <View style={{ height: 96 + 128, gap: 16 }}>
-            {selectedGoal && (
+            {selectedGoal.state && (
               <View style={{ paddingHorizontal: 24 }}>
                 <Text
-                  style={{ color: selectedGoal.color, fontSize: 32, textAlign: 'center' }}
+                  style={{ color: selectedGoal.state.color, fontSize: 32, textAlign: 'center' }}
                 >
-                  {selectedGoal.title}
+                  {selectedGoal.state.title}
                 </Text>
               </View>
             )}
 
             <ViewPager
-              ref={pageViewRef}
-              data={goals}
+              ref={goalVPRef}
+              data={goalsState}
               style={{ maxHeight: 96 }}
               renderItem={item => (
                 <View style={[styles.itemContainer, { backgroundColor: item.color }]}>
                   <Text style={styles.itemTitle}>{item.id} - {item.description}</Text>
                 </View>
               )}
-              onChange={handleOnChange}
+              onChange={onChangeSelection}
               onReachTail={() => console.log(`tail`)}
               onReachHead={() => console.log(`head`)}
               renderHead={() => <Text style={{ color: 'white', fontSize: 24 }}>head</Text>}
@@ -70,9 +54,9 @@ export default function HomeScreen() {
                 justifyContent: 'space-between',
               }}
             >
-              <Btn label="<" onPress={() => pageViewRef.current?.previousPage()} />
+              <Btn label="<" onPress={() => goalVPRef.current?.previousPage()} />
               <Text style={{ color: 'white', fontSize: 16 }}>{goalsLabel}</Text>
-              <Btn label=">" onPress={() => pageViewRef.current?.nextPage()} />
+              <Btn label=">" onPress={() => goalVPRef.current?.nextPage()} />
             </View>
           </View>
         )}
@@ -81,9 +65,9 @@ export default function HomeScreen() {
           <Slot />
         </View>
 
-        <BottomTab goals={goals} pageViewRef={pageViewRef} />
+        <BottomTab />
       </View>
-    </GestureHandlerRootView >
+    </GestureHandlerRootView>
   );
 }
 

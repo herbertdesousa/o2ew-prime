@@ -1,15 +1,16 @@
-import { ViewPagerRef } from "@/components/ViewPager/react-augment";
-import { Goal } from "@/entities/goal";
 import { useMemo } from "react";
 import { View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
-type GoalGroupedColor = {
+import { asyncGoalsToState, useGoal } from "@/contexts/goal-context";
+import { Goal } from "@/entities/goal";
+
+type GroupedGoal = {
   id: number;
   color: string;
 }
 
-function groupGoalsByColor(goals: Goal[]): GoalGroupedColor[] {
+function groupGoalsByColor(goals: Goal[]): GroupedGoal[] {
   const set = new Set<string>();
 
   goals.forEach(goal => set.add(goal.color));
@@ -17,18 +18,17 @@ function groupGoalsByColor(goals: Goal[]): GoalGroupedColor[] {
   return [...set].map((color, id) => ({ id, color }));
 }
 
-type Props = {
-  goals: Goal[];
-  pageViewRef: React.RefObject<ViewPagerRef<Goal>>;
-}
+export function BottomTab() {
+  const { goalVPRef, goals } = useGoal();
 
-export function BottomTab({ goals, pageViewRef }: Props) {
-  const goalsColors = useMemo((): GoalGroupedColor[] => {
-    return groupGoalsByColor(goals)
-  }, [goals]);
+  const goalsState = asyncGoalsToState(goals);
 
-  function hnadleGotoPage(goal: GoalGroupedColor) {
-    pageViewRef.current?.gotoPageWhere(g => g.color === goal.color);
+  const groupedGoals = useMemo((): GroupedGoal[] => {
+    return groupGoalsByColor(goalsState)
+  }, [goalsState]);
+
+  function handleGotoPage(goal: GroupedGoal) {
+    goalVPRef.current?.gotoPageWhere(g => g.color === goal.color);
   }
 
   return (
@@ -40,7 +40,7 @@ export function BottomTab({ goals, pageViewRef }: Props) {
         padding: 24,
       }}
     >
-      {goalsColors.map(goal => (
+      {groupedGoals.map(goal => (
         <TouchableOpacity
           key={goal.id}
           style={{
@@ -51,7 +51,7 @@ export function BottomTab({ goals, pageViewRef }: Props) {
             alignItems: 'center',
             justifyContent: 'center',
           }}
-          onPress={() => hnadleGotoPage(goal)}
+          onPress={() => handleGotoPage(goal)}
         >
         </TouchableOpacity>
       ))}
