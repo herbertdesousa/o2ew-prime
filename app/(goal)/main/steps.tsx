@@ -7,7 +7,7 @@ import { useAsync } from "@/utils/use-async";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 
-export default function HomeScreen() {
+export function Steps() {
   const { selectedGoal } = useGoal();
 
   const [isLoading, setIsLoading] = useState(true);

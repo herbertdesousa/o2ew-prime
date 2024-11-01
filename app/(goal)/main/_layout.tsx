@@ -1,4 +1,3 @@
-import { Slot } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -6,8 +5,9 @@ import { ViewPager } from '@/components/ViewPager/ViewPager';
 import { useGoal } from '@/contexts/goal-context';
 import { asyncArrayToState } from '@/utils/use-async';
 import { BottomTab } from './bottom-tab';
+import { Steps } from './steps';
 
-export default function HomeScreen() {
+export default function Layout() {
   const { goalVPRef, goals, selectedGoal, onChangeSelection } = useGoal();
 
   const goalsState = asyncArrayToState(goals);
@@ -63,7 +63,7 @@ export default function HomeScreen() {
         )}
 
         <View style={{ flex: 1 }}>
-          <Slot />
+          <Steps />
         </View>
 
         <BottomTab />
@@ -71,7 +71,6 @@ export default function HomeScreen() {
     </GestureHandlerRootView>
   );
 }
-
 
 type BtnProps = { label: string; onPress?(): void };
 function Btn({ label, onPress }: BtnProps) {
