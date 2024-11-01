@@ -1,13 +1,13 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { GoalBottomTab } from '@/components/GoalBottomTab';
 import { ViewPager } from '@/components/ViewPager/ViewPager';
 import { useGoal } from '@/contexts/goal-context';
+import { delay } from '@/utils/delay';
 import { asyncArrayToState } from '@/utils/use-async';
 import { useRouter } from 'expo-router';
-import { BottomTab } from './bottom-tab';
 import { Steps } from './steps';
-import { delay } from '@/utils/delay';
 
 export default function Layout() {
   const { goalVPRef, goals, selectedGoal, onChangeSelection } = useGoal();
@@ -78,7 +78,7 @@ export default function Layout() {
           <Steps />
         </View>
 
-        <BottomTab />
+        <GoalBottomTab />
       </View>
     </GestureHandlerRootView>
   );

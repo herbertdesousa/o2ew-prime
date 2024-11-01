@@ -6,7 +6,7 @@ import { useGoal } from "@/contexts/goal-context";
 import { Goal } from "@/entities/goal";
 import { asyncArrayToState } from "@/utils/use-async";
 
-type GroupedGoal = {
+export type GroupedGoal = {
   id: number;
   color: string;
 }
@@ -19,7 +19,11 @@ function groupGoalsByColor(goals: Goal[]): GroupedGoal[] {
   return [...set].map((color, id) => ({ id, color }));
 }
 
-export function BottomTab() {
+type Props = {
+  onGotoPage?(goal: GroupedGoal): void;
+}
+
+export function GoalBottomTab({ onGotoPage }: Props) {
   const { goalVPRef, goals } = useGoal();
 
   const goalsState = asyncArrayToState(goals);
@@ -29,7 +33,11 @@ export function BottomTab() {
   }, [goalsState]);
 
   function handleGotoPage(goal: GroupedGoal) {
-    goalVPRef.current?.gotoPageWhere(g => g.color === goal.color);
+    if (onGotoPage) {
+      onGotoPage(goal);
+    } else {
+      goalVPRef.current?.gotoPageWhere(g => g.color === goal.color);
+    }
   }
 
   return (
