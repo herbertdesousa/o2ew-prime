@@ -1,16 +1,6 @@
 import { Goal, GoalStep, GoalStepAnswer } from '@/entities/goal';
-import { object, z } from 'zod';
-
-function randomID(size: number): string {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-
-  for (let i = 0; i < size; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-
-  return result;
-}
+import { randomID } from '@/utils/random-id';
+import { z } from 'zod';
 
 export class GoalController {
   private mapIdToGoal = new Map<string, Goal>();
