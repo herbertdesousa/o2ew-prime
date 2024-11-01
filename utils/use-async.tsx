@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { DependencyList, useEffect, useState } from "react";
 
 type AsyncState<Data> = {
   state: 'LOADING';
@@ -11,6 +11,7 @@ type AsyncState<Data> = {
 
 export function useAsync<Data>(
   call: () => Promise<Data>,
+  deps: DependencyList = [],
 ): AsyncState<Data> {
   const [state, setState] = useState<AsyncState<Data>>({ state: 'LOADING' });
 
@@ -18,7 +19,7 @@ export function useAsync<Data>(
     call()
       .then(data => setState({ state: 'SUCCESS', data }))
       .catch(() => setState({ state: 'ERROR' }))
-  }, []);
+  }, deps);
 
   return state;
 }
