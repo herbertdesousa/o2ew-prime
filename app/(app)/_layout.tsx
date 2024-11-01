@@ -1,15 +1,16 @@
+import { Slot } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Slot } from 'expo-router';
 
 import { ViewPager } from '@/components/ViewPager/ViewPager';
-import { asyncGoalsToState, useGoal } from '@/contexts/goal-context';
+import { useGoal } from '@/contexts/goal-context';
+import { asyncArrayToState } from '@/utils/use-async';
 import { BottomTab } from './bottom-tab';
 
 export default function HomeScreen() {
   const { goalVPRef, goals, selectedGoal, onChangeSelection } = useGoal();
 
-  const goalsState = asyncGoalsToState(goals);
+  const goalsState = asyncArrayToState(goals);
 
   const goalsLabel = `${selectedGoal.index + 1}/${goalsState.length} Objetivos`;
 

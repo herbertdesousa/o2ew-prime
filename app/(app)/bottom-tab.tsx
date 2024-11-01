@@ -2,8 +2,9 @@ import { useMemo } from "react";
 import { View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
-import { asyncGoalsToState, useGoal } from "@/contexts/goal-context";
+import { useGoal } from "@/contexts/goal-context";
 import { Goal } from "@/entities/goal";
+import { asyncArrayToState } from "@/utils/use-async";
 
 type GroupedGoal = {
   id: number;
@@ -21,7 +22,7 @@ function groupGoalsByColor(goals: Goal[]): GroupedGoal[] {
 export function BottomTab() {
   const { goalVPRef, goals } = useGoal();
 
-  const goalsState = asyncGoalsToState(goals);
+  const goalsState = asyncArrayToState(goals);
 
   const groupedGoals = useMemo((): GroupedGoal[] => {
     return groupGoalsByColor(goalsState)

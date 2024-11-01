@@ -57,38 +57,37 @@ function Main({ goal }: Props) {
     });
   }
 
+  const steps = details.data?.steps || [];
+
   return (
-    <>
-      <ViewPager
-        // ref={pageViewRef}
-        data={details.data?.steps || []}
-        style={{ flex: 1 }}
-        renderItem={item => (
-          <View
-            style={{
-              borderWidth: 1,
-              borderColor: details.data?.color,
-              borderRadius: 8,
-              marginHorizontal: 24,
-              padding: 8
-            }}
-          >
-            {item.description && (
-              <Text style={{ color: 'white', fontSize: 18 }}>{item.description}</Text>
-            )}
-            {!item.description && (
-              <Text style={{ color: 'white', fontStyle: 'italic', fontSize: 18 }}>
-                Nenhuma descrição
-              </Text>
-            )}
-          </View>
-        )}
-        // onChange={handleOnChange}
-        onReachTail={handleReachTail}
-        onReachHead={handleReachHead}
-        renderHead={() => <Text style={{ color: 'white', fontSize: 18 }}>voltar passo</Text>}
-        renderTail={() => <Text style={{ color: 'white', fontSize: 18 }}>ir passo a frente</Text>}
-      />
-    </>
+    <ViewPager
+      data={steps}
+      style={{ flex: 1 }}
+      renderItem={item => (
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: details.data?.color,
+            borderRadius: 8,
+            marginHorizontal: 24,
+            padding: 8
+          }}
+        >
+          {item.description && (
+            <Text style={{ color: 'white', fontSize: 18 }}>{item.description}</Text>
+          )}
+          {!item.description && (
+            <Text style={{ color: 'white', fontStyle: 'italic', fontSize: 18 }}>
+              Nenhuma descrição
+            </Text>
+          )}
+        </View>
+      )}
+      // onChange={handleOnChange}
+      onReachTail={handleReachTail}
+      onReachHead={handleReachHead}
+      renderHead={() => <Text style={{ color: 'white', fontSize: 18 }}>voltar passo</Text>}
+      renderTail={() => <Text style={{ color: 'white', fontSize: 18 }}>ir passo a frente</Text>}
+    />
   );
 }

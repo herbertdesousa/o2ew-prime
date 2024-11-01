@@ -1,6 +1,7 @@
 import { ViewPagerRef } from "@/components/ViewPager/react-augment";
 import { DI } from "@/controllers/DI";
 import { Goal } from "@/entities/goal";
+import { asyncArrayToState } from "@/utils/use-async";
 import { create } from "zustand";
 
 type AsyncState<Data> =
@@ -21,10 +22,6 @@ type Context = {
 
 const goalVPRef = { current: null } as React.RefObject<ViewPagerRef<Goal>>;
 
-export function asyncGoalsToState(asyncGoals: AsyncState<Goal[]>) {
-  return asyncGoals.state === 'SUCCESS' ? asyncGoals.data : [];
-}
-
 export const useGoal = create<Context>((set) => {
   DI.goal.GetGoals()
     .then(data => set({ goals: { state: 'SUCCESS', data } }))
@@ -38,7 +35,7 @@ export const useGoal = create<Context>((set) => {
       set(({ goals }) => ({
         selectedGoal: {
           state: _goal,
-          index: asyncGoalsToState(goals)
+          index: asyncArrayToState(goals)
             .findIndex(g => g.$clientId === _goal.$clientId)
         }
       }));

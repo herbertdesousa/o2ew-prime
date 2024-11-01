@@ -9,6 +9,10 @@ type AsyncState<Data> = {
   data: Data;
 }
 
+export function asyncArrayToState<T>(asyncGoals: AsyncState<T[]>): T[] {
+  return asyncGoals.state === 'SUCCESS' ? asyncGoals.data : [];
+}
+
 export function useAsync<Data>(
   call: () => Promise<Data>,
   deps: DependencyList = [],
